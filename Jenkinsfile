@@ -32,16 +32,21 @@ pipeline {
                     }
                     }
         }
-        stage('Archive Test Report') {
-            steps {
-                archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-            }
-        }
     }
     post {
         always {
-            archiveArtifacts artifacts: 'playwright-report/**', 
-                            allowEmptyArchive: true
+           sh 'find . -name "index.html" || true'
+                
+                // Archive with correct path
+                archiveArtifacts artifacts: 'playwright-report/**/*', 
+                                allowEmptyArchive: false
+                
+                // Optional: Publish HTML report
+                publishHTML target: [
+                    reportDir: 'playwright-report',
+                    reportFiles: 'index.html',
+                    reportName: 'Playwright Report'
+                ]
         }
     }
 }
