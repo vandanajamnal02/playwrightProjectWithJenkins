@@ -42,11 +42,6 @@ pipeline {
                                 allowEmptyArchive: false
                 
                 // Optional: Publish HTML report
-                publishHTML target: [
-                    reportDir: 'playwright-report',
-                    reportFiles: 'index.html',
-                    reportName: 'Playwright Report'
-                ]
         }
     }
 }
