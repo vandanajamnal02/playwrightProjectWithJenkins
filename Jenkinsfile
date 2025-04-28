@@ -14,8 +14,16 @@ pipeline {
         }
         stage('Run Tests') {
             steps {
-                sh 'npm run test'
-            }
+                
+            
+
+            try {
+                        sh 'npm run test'
+                    } finally {
+                        // Cleanup browsers
+                        sh 'pkill -f "playwright" || true'
+                    }
+                    }
         }
         stage('Archive Test Report') {
             steps {
