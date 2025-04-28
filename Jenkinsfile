@@ -38,7 +38,7 @@ pipeline {
            sh 'find . -name "index.html" || true'
                 
                 // Archive with correct path
-                archiveArtifacts artifacts: 'playwright-report/**/*', 
+                archiveArtifacts artifacts: 'playwright-report/', excludes: '*.tmp' 
                                 allowEmptyArchive: false
                 
                 // Optional: Publish HTML report
