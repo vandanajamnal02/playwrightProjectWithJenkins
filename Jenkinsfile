@@ -71,36 +71,9 @@
 //         }
 //     }
 // }
-
-pipeline {
-    agent any
-
-    tools {
-        nodejs 'Node 20' // Must match the name set in Jenkins' Global Tool Configuration
-    }
-
-    environment {
-        HOME = "${WORKSPACE}"
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/vandanajamnal02/playwrightProjectWithJenkins.git', branch: 'main'
-            }
-        }
-
-        stage('Run Tests with Script') {
-            steps {
-                sh './run-playwright-tests.sh'
-            }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-        }
+stage('Run Tests') {
+    steps {
+        sh 'chmod +x run-playwright-tests.sh'
+        sh './run-playwright-tests.sh'
     }
 }
-
