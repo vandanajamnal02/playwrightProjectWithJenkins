@@ -3,15 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-  "test": "npx playwright test",
-  "test:report": "npx playwright show-report"
-},
-
+    "test": "npx playwright test",
+    "test:report": "npx playwright show-report"
+  },
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.52.0",
     "@types/node": "^22.15.3"
+  },
+  "dependencies": {
+    "playwright": "^1.52.0"
   }
 }
