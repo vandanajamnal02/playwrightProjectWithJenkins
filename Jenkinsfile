@@ -15,7 +15,7 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                sh 'podman build -t $IMAGE_NAME .'
+               sh 'podman build --registries-conf=/dev/null -t $IMAGE_NAME .'
             }
         }
 
@@ -33,11 +33,9 @@ pipeline {
             }
         }
     }
-}
-
-post {
-    always {
-        sh 'docker system prune -f || true'
-        // or for podman: sh 'podman system prune -f || true'
+    post {
+        always {
+            sh 'docker system prune -f || true'
+        }
     }
 }
