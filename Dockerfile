@@ -1,17 +1,13 @@
-# Use official Playwright image as base for best compatibility
-FROM mcr.microsoft.com/playwright:v1.42.1-jammy
+# 1. Remove Podman-docker compatibility layer
+sudo apt remove podman-docker -y 2>/dev/null || true
+sudo rm -f /usr/bin/podman-docker
 
-# Set working directory
-WORKDIR /app
+# 2. Clean up all container configurations
+sudo rm -rf /etc/containers/registries.conf.d/
 
-# Copy package files first for better caching
-COPY package*.json ./
+# 3. Verify Docker is the default
+sudo update-alternatives --config container-runtime
+# Select docker if available
 
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application
-COPY . .
-
-# Set the command to run tests
-CMD ["npx", "playwright", "test"]
+# 4. Restart Docker
+sudo systemctl restart docker

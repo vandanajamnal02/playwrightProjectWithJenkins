@@ -3,22 +3,29 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'playwright-test-image'
-        DOCKER_BUILDKIT = '1' 
-         }
+        CONTAINER_NAME = 'playwright-test-container'
+        // Force Docker usage
+        DOCKER_BUILDKIT = '1'
+        COMPOSE_DOCKER_CLI_BUILD = '1'
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Verify Docker') {
             steps {
-                git branch: 'main', url: 'https://github.com/vandanajamnal02/playwrightProjectWithJenkins.git'
+                sh '''
+                    # Verify we're using Docker
+                    docker --version
+                    docker info | grep "Server Version"
+                    # Remove any podman-docker symlinks
+                    rm -f /usr/bin/podman-docker 2>/dev/null || true
+                '''
             }
         }
 
         stage('Build Image') {
             steps {
                 sh '''
-                    # Ensure clean environment
-                    docker system prune -f
-                    # Build with explicit ignore of Podman configs
+                    # Completely ignore any Podman configurations
                     DOCKER_CONFIG=/dev/null docker build \
                         --no-cache \
                         -t $IMAGE_NAME .
@@ -36,12 +43,6 @@ pipeline {
                         npx playwright test
                 '''
             }
-        }
-    }
-
-    post {
-        always {
-            sh 'docker system prune -f || true'
         }
     }
 }
