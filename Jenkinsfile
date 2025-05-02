@@ -72,26 +72,34 @@
 //     }
 // }
 
-
-
-
 pipeline {
     agent any
 
+    tools {
+        nodejs 'Node 20' // Must match the name set in Jenkins' Global Tool Configuration
+    }
+
+    environment {
+        HOME = "${WORKSPACE}"
+    }
+
     stages {
-        stage('Run Playwright Tests in Docker') {
+        stage('Checkout') {
             steps {
-                script {
-                    sh '''
-                    docker run --rm -v "$PWD:/tests" -w /tests mcr.microsoft.com/playwright:v1.52.0-jammy \
-                    bash -c "
-                      npm ci && \
-                      npx playwright install && \
-                      npx playwright test
-                    "
-                    '''
-                }
+                git url: 'https://github.com/vandanajamnal02/playwrightProjectWithJenkins.git', branch: 'main'
             }
+        }
+
+        stage('Run Tests with Script') {
+            steps {
+                sh './run-playwright-tests.sh'
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
         }
     }
 }
