@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'playwright-test-image'
-        DOCKER_BUILDKIT = '1'  # Enable BuildKit for better builds
-    }
+        DOCKER_BUILDKIT = '1' 
+         }
 
     stages {
         stage('Checkout') {
