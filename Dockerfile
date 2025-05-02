@@ -24,6 +24,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 # Set working directory
 WORKDIR /app
 
+COPY .config/containers/registries.conf /etc/containers/registries.conf
+
 # Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
