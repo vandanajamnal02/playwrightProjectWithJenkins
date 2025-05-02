@@ -14,22 +14,22 @@ pipeline {
         }
 
         stage('Prepare Podman Registry') {
-      steps {
-        sh 'sudo rm -f /etc/containers/registries.conf.d/000-default.conf || true'
-      }
+    steps {
+        sh 'rm -f /etc/containers/registries.conf.d/000-default.conf || true'
+    }
     }
 
-      stage('Build Docker Image') {
-      steps {
-        sh 'podman build -t my-playwright-image .'
-      }
-    }
+        stage('Build Image') {
+            steps {
+                sh 'podman build -t $IMAGE_NAME .'
+            }
+        }
 
-        stage('Run Tests in Docker Container') {
+        stage('Run Tests in Container') {
             steps {
                 script {
                     sh """
-                        docker run --rm \
+                        podman run --rm \
                             -v \$PWD:/app \
                             -w /app \
                             $IMAGE_NAME \
@@ -37,13 +37,6 @@ pipeline {
                     """
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'Cleaning up Docker containers/images if needed'
-            // Optional: Add cleanup logic
         }
     }
 }
