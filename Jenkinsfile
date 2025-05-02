@@ -40,3 +40,10 @@ pipeline {
         }
     }
 }
+
+post {
+    always {
+        sh 'docker system prune -f || true'
+        // or for podman: sh 'podman system prune -f || true'
+    }
+}
