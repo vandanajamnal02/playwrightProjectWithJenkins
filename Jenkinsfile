@@ -16,8 +16,6 @@ pipeline {
                     # Verify we're using Docker
                     docker --version
                     docker info | grep "Server Version"
-                    # Remove any podman-docker symlinks
-                    rm -f /usr/bin/podman-docker 2>/dev/null || true
                 '''
             }
         }

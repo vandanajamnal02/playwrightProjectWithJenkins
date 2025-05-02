@@ -1,13 +1,21 @@
-# 1. Remove Podman-docker compatibility layer
-sudo apt remove podman-docker -y 2>/dev/null || true
-sudo rm -f /usr/bin/podman-docker
+# Use Ubuntu base with explicit package sources
+FROM ubuntu:22.04
 
-# 2. Clean up all container configurations
-sudo rm -rf /etc/containers/registries.conf.d/
+# Set up direct APT sources to avoid registry lookups
+RUN echo "deb http://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse" > /etc/apt/sources.list && \
+    echo "deb http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb http://archive.ubuntu.com/ubuntu jammy-security main restricted universe multiverse" >> /etc/apt/sources.list
 
-# 3. Verify Docker is the default
-sudo update-alternatives --config container-runtime
-# Select docker if available
+# Install Node.js directly from nodesource
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
 
-# 4. Restart Docker
-sudo systemctl restart docker
+# Rest of your Dockerfile remains the same...
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npx playwright install --with-deps
+CMD ["npx", "playwright", "test"]
