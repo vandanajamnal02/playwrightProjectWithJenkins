@@ -15,21 +15,19 @@ pipeline {
 
         stage('Build Image') {
             steps {
-               sh 'podman build --registries-conf=/dev/null -t $IMAGE_NAME .'
+               sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
         stage('Run Tests in Container') {
-            steps {
-                script {
-                    sh """
-                        podman run --rm \
-                            -v \$PWD:/app \
-                            -w /app \
-                            $IMAGE_NAME \
-                            npx playwright test
-                    """
-                }
+                steps {
+                sh '''
+                    docker run --rm \
+                        -v $PWD:/app \
+                        -w /app \
+                        $IMAGE_NAME \
+                        npx playwright test
+                '''
             }
         }
     }
