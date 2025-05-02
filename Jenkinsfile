@@ -13,12 +13,6 @@ pipeline {
             }
         }
 
-        stage('Prepare Podman Registry') {
-    steps {
-        sh 'rm -f /etc/containers/registries.conf.d/000-default.conf || true'
-    }
-    }
-
         stage('Build Image') {
             steps {
                 sh 'podman build -t $IMAGE_NAME .'
