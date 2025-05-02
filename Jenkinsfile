@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'playwright-test-image'
-        CONTAINER_NAME = 'playwright-test-container'
+        DOCKER_BUILDKIT = '1'  # Enable BuildKit for better builds
     }
 
     stages {
@@ -15,12 +15,19 @@ pipeline {
 
         stage('Build Image') {
             steps {
-               sh 'docker build -t $IMAGE_NAME .'
+                sh '''
+                    # Ensure clean environment
+                    docker system prune -f
+                    # Build with explicit ignore of Podman configs
+                    DOCKER_CONFIG=/dev/null docker build \
+                        --no-cache \
+                        -t $IMAGE_NAME .
+                '''
             }
         }
 
-        stage('Run Tests in Container') {
-                steps {
+        stage('Run Tests') {
+            steps {
                 sh '''
                     docker run --rm \
                         -v $PWD:/app \
@@ -31,6 +38,7 @@ pipeline {
             }
         }
     }
+
     post {
         always {
             sh 'docker system prune -f || true'
