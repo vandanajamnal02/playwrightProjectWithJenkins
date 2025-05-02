@@ -1,50 +1,45 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'Node 20' // Make sure "Node 20" is configured under Manage Jenkins > Global Tool Configuration
-    }
-
     environment {
-        HOME = "${WORKSPACE}"
+        IMAGE_NAME = 'playwright-test-image'
+        CONTAINER_NAME = 'playwright-test-container'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git url: 'https://github.com/vandanajamnal02/playwrightProjectWithJenkins.git', branch: 'main'
+                git 'https://github.com/vandanajamnal02/playwrightProjectWithJenkins.git'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build Docker Image') {
             steps {
-                sh 'npm install'
-                sh 'npx playwright install --with-deps'
+                script {
+                    sh 'docker build -t $IMAGE_NAME .'
+                }
             }
         }
 
-        stage('Make Script Executable') {
+        stage('Run Tests in Docker Container') {
             steps {
-                sh 'chmod +x run-playwright-tests.sh'
-            }
-        }
-
-        stage('Run Playwright Tests') {
-            steps {
-                sh './run-playwright-tests.sh'
+                script {
+                    sh """
+                        docker run --rm \
+                            -v \$PWD:/app \
+                            -w /app \
+                            $IMAGE_NAME \
+                            npx playwright test
+                    """
+                }
             }
         }
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-        }
-        success {
-            echo '✅ Tests completed successfully!'
-        }
-        failure {
-            echo '❌ Tests failed. Check the logs.'
+            echo 'Cleaning up Docker containers/images if needed'
+            // Optional: Add cleanup logic
         }
     }
 }
