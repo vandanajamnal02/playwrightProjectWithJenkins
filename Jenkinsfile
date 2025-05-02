@@ -6,6 +6,27 @@ pipeline {
     }
 
     stages {
+        stage('Verify Docker') {
+            steps {
+                script {
+                    try {
+                        // Check Docker version (will fail if Docker not running)
+                        def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
+                        echo "✅ Docker is installed: ${dockerVersion}"
+                        
+                        // Check if Docker daemon is running
+                        def dockerStatus = sh(script: 'docker info', returnStdout: true, returnStatus: true)
+                        if (dockerStatus != 0) {
+                            error("❌ Docker daemon is NOT running!")
+                        } else {
+                            echo "✅ Docker daemon is running"
+                        }
+                    } catch (Exception e) {
+                        error("❌ Docker check failed: ${e.getMessage()}")
+                    }
+                }
+            }
+        }
         stage('Build Image') {
             steps {
                 sh '''
