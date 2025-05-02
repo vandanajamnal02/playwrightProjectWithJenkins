@@ -3,19 +3,19 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'playwright-test-image'
-        CONTAINER_NAME = 'playwright-test-container'
-        // Force Docker usage
+        // Force Docker isolation
         DOCKER_BUILDKIT = '1'
-        COMPOSE_DOCKER_CLI_BUILD = '1'
     }
 
     stages {
         stage('Verify Docker') {
             steps {
                 sh '''
-                    # Verify we're using Docker
-                    docker --version
-                    docker info | grep "Server Version"
+                    docker --version || { echo "ERROR: Docker not installed!"; exit 1; }
+                    if command -v podman &> /dev/null; then
+                        echo "WARNING: Podman is installed and may interfere!"
+                        exit 1
+                    fi
                 '''
             }
         }
@@ -23,7 +23,6 @@ pipeline {
         stage('Build Image') {
             steps {
                 sh '''
-                    # Completely ignore any Podman configurations
                     DOCKER_CONFIG=/dev/null docker build \
                         --no-cache \
                         -t $IMAGE_NAME .
