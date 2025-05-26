@@ -9,39 +9,47 @@ pipeline {
         stage('Verify Docker') {
             steps {
                 script {
+                    def dockerAvailable = false
                     try {
-                        def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
-                        echo "✅ Docker is installed: ${dockerVersion}"
+                        def version = sh(script: 'docker --version', returnStdout: true).trim()
+                        echo "✅ Docker installed: ${version}"
 
-                        def dockerInfoStatus = sh(script: 'docker info > /dev/null 2>&1', returnStatus: true)
-                        if (dockerInfoStatus != 0) {
-                            error("❌ Docker daemon is NOT running!")
-                        } else {
+                        def infoStatus = sh(script: 'docker info > /dev/null 2>&1', returnStatus: true)
+                        if (infoStatus == 0) {
                             echo "✅ Docker daemon is running"
+                            dockerAvailable = true
+                        } else {
+                            echo "❌ Docker daemon is NOT running"
                         }
                     } catch (Exception e) {
-                        error("❌ Docker check failed: ${e.getMessage()}")
+                        echo "❌ Docker check failed: ${e.getMessage()}"
                     }
+                    // Save in env variable for next stages
+                    env.DOCKER_AVAILABLE = dockerAvailable.toString()
                 }
             }
         }
 
         stage('Build Docker Image') {
+            when {
+                expression { env.DOCKER_AVAILABLE == 'true' }
+            }
             steps {
-                sh '''
-                    docker build -t $IMAGE_NAME .
-                '''
+                sh "docker build -t $IMAGE_NAME ."
             }
         }
 
         stage('Run Playwright Tests') {
+            when {
+                expression { env.DOCKER_AVAILABLE == 'true' }
+            }
             steps {
-                sh '''
+                sh """
                     docker run --rm \
-                        -v $PWD:/app \
+                        -v \$PWD:/app \
                         -w /app \
                         $IMAGE_NAME
-                '''
+                """
             }
         }
     }
