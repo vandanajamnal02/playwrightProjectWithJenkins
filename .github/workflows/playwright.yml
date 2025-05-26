@@ -28,6 +28,9 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
+        env:
+          CI: true
+          HOME: /root
 
       - name: Upload Playwright Test Report (optional)
         if: always()
