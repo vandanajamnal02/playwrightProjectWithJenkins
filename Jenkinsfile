@@ -10,13 +10,11 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Check Docker version (will fail if Docker not running)
                         def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
                         echo "✅ Docker is installed: ${dockerVersion}"
-                        
-                        // Check if Docker daemon is running
-                        def dockerStatus = sh(script: 'docker info', returnStdout: true, returnStatus: true)
-                        if (dockerStatus != 0) {
+
+                        def dockerInfoStatus = sh(script: 'docker info > /dev/null 2>&1', returnStatus: true)
+                        if (dockerInfoStatus != 0) {
                             error("❌ Docker daemon is NOT running!")
                         } else {
                             echo "✅ Docker daemon is running"
@@ -27,26 +25,22 @@ pipeline {
                 }
             }
         }
-        stage('Build Image') {
+
+        stage('Build Docker Image') {
             steps {
                 sh '''
-                    # Clean up any previous builds
-                    docker system prune -f || true
-                    
-                    # Build with proper no-cache syntax
-                    docker build --no-cache -t $IMAGE_NAME .
+                    docker build -t $IMAGE_NAME .
                 '''
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Playwright Tests') {
             steps {
                 sh '''
                     docker run --rm \
                         -v $PWD:/app \
                         -w /app \
-                        $IMAGE_NAME \
-                        npx playwright test
+                        $IMAGE_NAME
                 '''
             }
         }
